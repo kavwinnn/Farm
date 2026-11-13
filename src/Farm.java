@@ -9,21 +9,22 @@ public class Farm {
     public static final int ROWS = 15;
 
     // . grass   , tilled soil   # fence   ~ pond   H house   S shop   B shipping bin   V where the villager stands
+    // P pet shop   f pen fence   g pen gate   c chicken pen floor   w cow pen floor
     private static final String[] MAP = {
         "####################",
-        "#HHHH.........SSSS.#",
-        "#HHHH.........SSSS.#",
-        "#HHHH.........SSSS.#",
+        "#HHHH.....PPPPSSSS.#",
+        "#HHHH.....PPPPSSSS.#",
+        "#HHHH.....PPPPSSSS.#",
         "#..................#",
         "#..................#",
         "#...,,,,,..V.......#",
         "#...,,,,,..........#",
         "#..................#",
         "#..................#",
-        "#.............~~~..#",
-        "#.B...........~~~~.#",
-        "#.............~~~..#",
-        "#..................#",
+        "#..fgffffffgff~~~..#",
+        "#.Bfccccfwwwwf~~~~.#",
+        "#..fccccfwwwwf~~~..#",
+        "#..fccccfwwwwf.....#",
         "####################",
     };
 
@@ -96,6 +97,7 @@ public class Farm {
         }
         drawHouse(g, boundsOf(TileType.HOUSE));
         drawShop(g, boundsOf(TileType.SHOP));
+        drawPetShop(g, boundsOf(TileType.PET_SHOP));
         drawBin(g, boundsOf(TileType.BIN));
     }
 
@@ -131,6 +133,39 @@ public class Farm {
                     g.fillRect(x, y + 19, TILE, 3);
                     g.fillRect(x + 12, y + 6, 8, 20);
                 }
+                break;
+            case PEN_FENCE:   // a low wooden pen fence, thinner than the outer one
+                drawGrass(g, x, y, seed);
+                g.setColor(WOOD);
+                if (tileAt(col, row - 1).getType() != TileType.PEN_FENCE) {   // top rail of the pen
+                    g.fillRect(x, y + 14, TILE, 2);
+                    g.fillRect(x, y + 21, TILE, 2);
+                    g.fillRect(x + 14, y + 10, 4, 16);
+                } else {
+                    g.fillRect(x + 14, y, 4, TILE);
+                    g.fillRect(x + 11, y + 8, 10, 2);
+                    g.fillRect(x + 11, y + 20, 10, 2);
+                }
+                break;
+            case GATE:   // open gate: grass with a wooden post on each side
+                drawGrass(g, x, y, seed);
+                g.setColor(WOOD);
+                g.fillRect(x, y + 10, 4, 16);
+                g.fillRect(x + TILE - 4, y + 10, 4, 16);
+                break;
+            case CHICKEN_PEN:   // straw
+                g.setColor(new Color(235, 215, 140));
+                g.fillRect(x, y, TILE, TILE);
+                g.setColor(new Color(215, 190, 110));
+                g.drawLine(x + 4 + seed % 9, y + 8, x + 10 + seed % 9, y + 6);
+                g.drawLine(x + 14 + seed % 7, y + 22, x + 20 + seed % 7, y + 24);
+                break;
+            case COW_PEN:   // grassy dirt
+                g.setColor(new Color(150, 170, 90));
+                g.fillRect(x, y, TILE, TILE);
+                g.setColor(new Color(125, 145, 70));
+                g.drawLine(x + 5 + seed % 11, y + 12, x + 7 + seed % 11, y + 8);
+                g.drawLine(x + 18 + seed % 8, y + 25, x + 20 + seed % 8, y + 21);
                 break;
             default:   // grass, and the ground under buildings
                 drawGrass(g, x, y, seed);
@@ -199,6 +234,23 @@ public class Farm {
         g.setColor(new Color(60, 40, 30));
         g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
         g.drawString("SEEDS", b.x + b.width / 2 - 21, b.y + b.height / 2 + 29);
+    }
+
+    /** Same look as the seed shop, with a green-and-white awning and a "PETS" sign. */
+    private void drawPetShop(Graphics2D g, Rectangle b) {
+        g.setColor(WOOD);
+        g.fillRect(b.x + 6, b.y + 30, 4, b.height - 30);
+        g.fillRect(b.x + b.width - 10, b.y + 30, 4, b.height - 30);
+        g.fillRect(b.x + 2, b.y + b.height / 2 + 6, b.width - 4, b.height / 2 - 8);
+        for (int i = 0; i < 8; i++) {   // striped awning
+            g.setColor(i % 2 == 0 ? new Color(60, 160, 80) : new Color(250, 245, 235));
+            g.fillRect(b.x + i * b.width / 8, b.y + 6, b.width / 8, 24);
+        }
+        g.setColor(new Color(250, 240, 200));
+        g.fillRect(b.x + b.width / 2 - 32, b.y + b.height / 2 + 14, 64, 20);
+        g.setColor(new Color(60, 40, 30));
+        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        g.drawString("PETS", b.x + b.width / 2 - 17, b.y + b.height / 2 + 29);
     }
 
     private void drawBin(Graphics2D g, Rectangle b) {
