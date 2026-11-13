@@ -25,6 +25,9 @@ public class Hud {
         g.fillRect(410, top + 9, 150, 13);
         g.setColor(farmer.getEnergy() < 25 ? new Color(230, 80, 60) : new Color(110, 210, 90));
         g.fillRect(410, top + 9, 150 * farmer.getEnergy() / Farmer.MAX_ENERGY, 13);
+        g.setFont(Ui.font(12));
+        g.setColor(Color.WHITE);
+        g.drawString("Feed x" + farmer.getFeed(), 568, top + 20);
 
         g.setFont(Ui.font(12));
         slot(g, 8, top + 30, farmer.getCan().getLabel(), false);

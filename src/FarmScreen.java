@@ -101,6 +101,11 @@ public class FarmScreen implements Screen {
             talkTo(villager);
             return;
         }
+        Animal animal = farm.animalAt(col, row);
+        if (animal != null) {
+            tend(animal, col, row);
+            return;
+        }
         Tile tile = farm.tileAt(col, row);
         if (tile == null) return;
         try {
@@ -110,6 +115,9 @@ public class FarmScreen implements Screen {
                     return;
                 case SHOP:
                     game.setScreen(new ShopScreen(game, this));
+                    return;
+                case PET_SHOP:
+                    game.setScreen(new PetShopScreen(game, this));
                     return;
                 case BIN:
                     ship();
@@ -142,11 +150,17 @@ public class FarmScreen implements Screen {
     String hint() {
         int col = farmer.facingCol(), row = farmer.facingRow();
         if (farm.villagerAt(col, row) != null) return "Talk";
+        Animal animal = farm.animalAt(col, row);
+        if (animal != null) {
+            if (animal.isProductReady()) return "Collect " + animal.getProductName();
+            return animal.isFedToday() ? null : "Feed";
+        }
         Tile tile = farm.tileAt(col, row);
         if (tile == null) return null;
         switch (tile.getType()) {
             case HOUSE: return "Sleep";
             case SHOP:  return "Shop";
+            case PET_SHOP: return "Pets";
             case BIN:   return "Ship basket";
             case POND:  return "Refill can";
             default:    break;
@@ -164,12 +178,32 @@ public class FarmScreen implements Screen {
         if (checklist != null) checklist.complete(Checklist.Step.TALK);
     }
 
+    /** SPACE on an animal: collect its product if one is waiting, otherwise feed it (1 feed). */
+    private void tend(Animal animal, int col, int row) {
+        try {
+            if (animal.isProductReady()) {
+                String name = animal.collect();
+                farmer.getBasket().add(name, 1);
+                floatAt(col, row, "+1 " + name, Color.WHITE);
+                say("Collected " + name.toLowerCase() + " - ship it in the bin");
+                return;
+            }
+            if (animal.isFedToday()) throw new FarmException("Already fed today");   // checked first, so no feed is wasted
+            farmer.useFeed();
+            animal.feed();
+            floatAt(col, row, "\u2665", new Color(255, 120, 150));
+            say("The " + animal.getKind().toLowerCase() + " ate happily. Feed left: " + farmer.getFeed());
+        } catch (FarmException e) {
+            say(e.getMessage());
+        }
+    }
+
     private void ship() throws FarmException {
         Bag<String> basket = farmer.getBasket();
         if (basket.isEmpty()) throw new FarmException("Nothing to ship - harvest something first");
         int value = 0;
         for (Map.Entry<String, Integer> entry : basket.asMap().entrySet()) {
-            value += CropFactory.create(entry.getKey()).getSellPrice() * entry.getValue();
+            value += Market.sellPriceOf(entry.getKey()) * entry.getValue();
             shippedToday.add(entry.getKey(), entry.getValue());
         }
         basket.clear();
@@ -192,7 +226,7 @@ public class FarmScreen implements Screen {
         if (passedOut) lines.add("You passed out at midnight! Half energy today.");
         int earned = 0;
         for (Map.Entry<String, Integer> entry : shippedToday.asMap().entrySet()) {
-            int value = CropFactory.create(entry.getKey()).getSellPrice() * entry.getValue();
+            int value = Market.sellPriceOf(entry.getKey()) * entry.getValue();
             lines.add(String.format("Shipped %-10s x%-3d %6dG", entry.getKey(), entry.getValue(), value));
             earned += value;
         }
@@ -202,7 +236,7 @@ public class FarmScreen implements Screen {
         int goldBefore = farmer.getGold();
         farmer.earn(earned);
         clock.nextDay(rng);
-        farm.newDay(clock.getWeather());
+        lines.addAll(farm.newDay(clock.getWeather()));   // the animals' news
         String news = farm.getVillager().newDay(clock.getDay(), rng);
         if (news != null) lines.add(news);
         farmer.wakeUp(DOOR_COL, DOOR_ROW, passedOut);
@@ -276,9 +310,21 @@ public class FarmScreen implements Screen {
     private void drawPeople(Graphics2D g) {
         Villager villager = farm.getVillager();
         boolean villagerBehind = villager.getRow() <= farmer.getRow();
+        drawAnimals(g, true);
         if (villagerBehind) villager.draw(g, game.getFrames());
         farmer.draw(g);
         if (!villagerBehind) villager.draw(g, game.getFrames());
+        drawAnimals(g, false);
+    }
+
+    /** The animals on or above the farmer's row (behind), or below it (in front). Hearts show on the one faced. */
+    private void drawAnimals(Graphics2D g, boolean behind) {
+        Animal faced = farm.animalAt(farmer.facingCol(), farmer.facingRow());
+        for (String kind : AnimalFactory.NAMES) {
+            for (Animal animal : farm.penFor(kind).getAnimals()) {
+                if ((animal.getRow() <= farmer.getRow()) == behind) animal.draw(g, game.getFrames(), animal == faced);
+            }
+        }
     }
 
     /** A small "SPACE  Water" tag beside the highlighted tile. */
