@@ -1,0 +1,24 @@
+little-farm save 1
+day 6
+weather SUNNY
+gold 650
+earned 560
+can 20
+seeds Turnip 5
+seeds Potato 0
+seeds Strawberry 0
+villager 0 0
+feed 8
+animal Chicken 0 3 0 yes
+animal Chicken 1 2 1 no
+animal Cow 0 2 2 no
+soil 4 6 - 0 dry
+soil 5 6 - 0 dry
+soil 6 6 - 0 dry
+soil 7 6 - 0 dry
+soil 8 6 - 0 dry
+soil 4 7 - 0 dry
+soil 5 7 - 0 dry
+soil 6 7 - 0 dry
+soil 7 7 - 0 dry
+soil 8 7 - 0 dry

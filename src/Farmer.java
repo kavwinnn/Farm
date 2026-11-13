@@ -22,6 +22,7 @@ public class Farmer {
     private final WateringCan can = new WateringCan();
     private final List<SeedBag> seedBags = new ArrayList<>();
     private int selectedSeed = 0;
+    private int feed = 0;   // animal feed, shared by chickens and cows: 1 feed = 1 meal
 
     public Farmer(int col, int row, int gold) {
         this.col = col;
@@ -128,6 +129,23 @@ public class Farmer {
     public void setGold(int gold) {
         if (gold < 0) throw new IllegalArgumentException("gold can't be negative: " + gold);
         this.gold = gold;
+    }
+
+    public int getFeed() { return feed; }
+
+    public void addFeed(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("can't add negative feed: " + amount);
+        feed += amount;
+    }
+
+    public void setFeed(int amount) {
+        if (amount < 0) throw new IllegalArgumentException("feed can't be negative: " + amount);
+        feed = amount;
+    }
+
+    public void useFeed() throws NoFeedException {
+        if (feed == 0) throw new NoFeedException();
+        feed--;
     }
 
     public void setTotalEarned(int amount) {

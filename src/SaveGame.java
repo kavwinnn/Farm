@@ -14,6 +14,8 @@ import java.util.Map;
  *   seeds Turnip 2
  *   request Turnip 3 360 4     (crop amount reward daysLeft)
  *   soil 5 6 Turnip 1 wet      (col row crop daysGrown wet/dry; "-" for an empty plot)
+ *   feed 12
+ *   animal Chicken 0 3 1 no    (kind slot love fedDays ready yes/no)
  */
 public class SaveGame {
     private static final String HEADER = "little-farm save 1";
@@ -65,6 +67,14 @@ public class SaveGame {
                 out.println("request " + request.getCropName() + " " + request.getAmount() + " "
                         + request.getReward() + " " + request.getDaysLeft());
             }
+            out.println("feed " + farmer.getFeed());
+            for (String kind : AnimalFactory.NAMES) {
+                Pen pen = farm.penFor(kind);
+                for (Animal animal : pen.getAnimals()) {
+                    out.println("animal " + kind + " " + pen.slotOf(animal) + " " + animal.getLove() + " "
+                            + animal.getFedDays() + (animal.isProductReady() ? " yes" : " no"));
+                }
+            }
             for (int r = 0; r < Farm.ROWS; r++) {
                 for (int c = 0; c < Farm.COLS; c++) {
                     Tile tile = farm.tileAt(c, r);
@@ -101,6 +111,8 @@ public class SaveGame {
                     case "seeds":  farmer.getSeedBag(parts[1]).setSeeds(Integer.parseInt(parts[2])); break;
                     case "basket": farmer.getBasket().add(parts[1], Integer.parseInt(parts[2])); break;
                     case "soil":   loadSoil(farm, parts); break;
+                    case "feed":   farmer.setFeed(Integer.parseInt(parts[1])); break;
+                    case "animal": loadAnimal(farm, parts); break;
                     case "":       break;   // blank line
                     default:       throw new IOException("line " + (i + 1) + ": unknown entry '" + parts[0] + "'");
                 }
@@ -109,6 +121,15 @@ public class SaveGame {
                 throw new IOException("line " + (i + 1) + " is damaged: " + lines.get(i), e);
             }
         }
+    }
+
+    private void loadAnimal(Farm farm, String[] parts) {
+        boolean ready;
+        if (parts[5].equals("yes")) ready = true;
+        else if (parts[5].equals("no")) ready = false;
+        else throw new IllegalArgumentException("ready must be yes or no, not '" + parts[5] + "'");
+        farm.penFor(parts[1]).restoreAt(Integer.parseInt(parts[2]), Integer.parseInt(parts[3]),
+                Integer.parseInt(parts[4]), ready);
     }
 
     private void loadSoil(Farm farm, String[] parts) throws FarmException {
