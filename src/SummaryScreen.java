@@ -38,7 +38,10 @@ public class SummaryScreen implements Screen {
     public void draw(Graphics2D g) {
         farm.draw(g);
         Ui.dim(g, 200);
-        int width = 480, height = 350, left = (Ui.WIDTH - width) / 2, top = 80;
+        // 6 lines fit the normal box; with more (e.g. news from many animals) the box grows and everything below moves down
+        int extra = Math.max(0, lines.size() - 6) * 22;
+        int width = 480, height = 350 + extra, left = (Ui.WIDTH - width) / 2;
+        int top = Math.max(0, Math.min(80, (Ui.HEIGHT - height) / 2));
         Ui.paper(g, left, top, width, height);
         GameClock clock = farm.getClock();
 
@@ -49,20 +52,20 @@ public class SummaryScreen implements Screen {
 
         double progress = Math.min(1.0, ticks / (double) COUNT_UP_TICKS);
         int shown = goldBefore + (int) Math.round((goldAfter - goldBefore) * progress);
-        Ui.centered(g, "Gold  " + shown + "G", 26, top + 220, new Color(190, 140, 20));
+        Ui.centered(g, "Gold  " + shown + "G", 26, top + 220 + extra, new Color(190, 140, 20));
 
         if (!farm.isMonthOver()) {
             g.setFont(Ui.font(15));
             g.setColor(Ui.INK);
             String weather = "Tomorrow: " + clock.getWeather().getLabel();
             int textX = (Ui.WIDTH - g.getFontMetrics().stringWidth(weather)) / 2;
-            g.drawString(weather, textX, top + 262);
-            clock.getWeather().drawIcon(g, textX - 28, top + 246);
+            g.drawString(weather, textX, top + 262 + extra);
+            clock.getWeather().drawIcon(g, textX - 28, top + 246 + extra);
             int daysLeft = FarmScreen.LAST_DAY - clock.getDay() + 1;
             int stillNeeded = Math.max(0, FarmScreen.GOAL_GOLD - goldAfter);
-            Ui.centered(g, daysLeft + " days left, " + stillNeeded + "G still needed", 15, top + 288, Ui.INK);
+            Ui.centered(g, daysLeft + " days left, " + stillNeeded + "G still needed", 15, top + 288 + extra, Ui.INK);
         } else {
-            Ui.centered(g, "That was the last day of the month...", 15, top + 275, Ui.INK);
+            Ui.centered(g, "That was the last day of the month...", 15, top + 275 + extra, Ui.INK);
         }
         if (ticks >= COUNT_UP_TICKS && (game.getFrames() / 30) % 2 == 0) {
             Ui.centered(g, "press SPACE", 14, top + height - 18, Ui.WOOD);
