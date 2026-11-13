@@ -2,6 +2,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Farm {
     public static final int TILE = 32;   // pixels
@@ -36,6 +38,8 @@ public class Farm {
 
     private final Tile[][] tiles = new Tile[ROWS][COLS];
     private Villager villager;
+    private final Pen chickenPen = new Pen("Chicken", new int[][] {{5, 12}, {6, 12}, {7, 12}});
+    private final Pen cowPen = new Pen("Cow", new int[][] {{10, 12}, {11, 12}, {12, 12}});
 
     public Farm() {
         for (int r = 0; r < ROWS; r++) {
@@ -57,6 +61,21 @@ public class Farm {
         return villager != null && villager.getCol() == col && villager.getRow() == row ? villager : null;
     }
 
+    /** @return the pen for "Chicken" or "Cow" */
+    public Pen penFor(String kind) {
+        switch (kind) {
+            case "Chicken": return chickenPen;
+            case "Cow": return cowPen;
+            default: throw new IllegalArgumentException("unknown animal: " + kind);
+        }
+    }
+
+    /** @return the animal standing on (col, row) in either pen, or null */
+    public Animal animalAt(int col, int row) {
+        Animal animal = chickenPen.animalAt(col, row);
+        return animal != null ? animal : cowPen.animalAt(col, row);
+    }
+
     /** @return the tile, or null if (col, row) is off the map */
     public Tile tileAt(int col, int row) {
         if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return null;
@@ -65,7 +84,8 @@ public class Farm {
 
     public boolean isWalkable(int col, int row) {
         Tile tile = tileAt(col, row);
-        return tile != null && tile.getType().isWalkable() && villagerAt(col, row) == null;
+        return tile != null && tile.getType().isWalkable() && villagerAt(col, row) == null
+                && animalAt(col, row) == null;
     }
 
     /** Growing crops that still need water today. */
@@ -79,14 +99,20 @@ public class Farm {
         return count;
     }
 
-    /** Crops grow overnight, then the new day's weather may water everything. */
-    public void newDay(Weather weather) {
+    /**
+     * Crops grow overnight, then the new day's weather may water everything. The animals in both pens
+     * have their night too. @return the animals' news for the end-of-day summary
+     */
+    public List<String> newDay(Weather weather) {
         for (Tile[] line : tiles) {
             for (Tile tile : line) {
                 tile.newDay();
                 if (weather.watersCrops()) tile.soak();
             }
         }
+        List<String> news = new ArrayList<>(chickenPen.newDay());
+        news.addAll(cowPen.newDay());
+        return news;
     }
 
     // ---- drawing --------------------------------------------------------------
