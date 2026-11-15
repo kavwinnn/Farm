@@ -70,8 +70,9 @@ public class ShopScreen implements Screen {
                 g.fillRoundRect(left + 18, y - 19, width - 36, 27, 8, 8);
             }
             g.setColor(Ui.INK);
+            int sells = Market.sellPriceOf(crop.getName());   // today's market price, not the crop's base price
             g.drawString(String.format("%-11s %5dG %3d days %6dG %+7dG", crop.getName(), crop.getSeedPrice(),
-                    crop.getDaysToMature(), crop.getSellPrice(), crop.getSellPrice() - crop.getSeedPrice()), left + 30, y);
+                    crop.getDaysToMature(), sells, sells - crop.getSeedPrice()), left + 30, y);
         }
 
         Crop chosen = crops[row];

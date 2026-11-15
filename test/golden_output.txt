@@ -1,0 +1,27 @@
+== 1. ship an empty basket
+ship -> refused: Nothing to ship - harvest something first
+== 2. ship one of each crop
+ship -> +440G | basket empty
+summary: Shipped Turnip     x3      180G
+summary: Shipped Potato     x1      140G
+summary: Shipped Strawberry x2      120G
+gold 300 -> 740 | earned total 440
+== 3. a day with nothing shipped
+summary: Nothing was shipped today.
+gold 740 -> 740 | earned total 440
+== 4. ship twice in one day, the same crop both times
+ship -> +60G | basket empty
+ship -> +300G | basket empty
+summary: Shipped Turnip     x5      300G
+summary: Shipped Strawberry x1       60G
+gold 740 -> 1100 | earned total 800
+== 5. animal products
+ship -> +280G | basket empty
+summary: Shipped Egg        x2      100G
+summary: Shipped Milk       x1      180G
+gold 1100 -> 1380 | earned total 1080
+== 6. a big basket
+ship -> +16020G | basket empty
+summary: Shipped Potato     x99   13860G
+summary: Shipped Milk       x12    2160G
+gold 1380 -> 17400 | earned total 17100

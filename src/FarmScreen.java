@@ -203,12 +203,17 @@ public class FarmScreen implements Screen {
         if (basket.isEmpty()) throw new FarmException("Nothing to ship - harvest something first");
         int value = 0;
         for (Map.Entry<String, Integer> entry : basket.asMap().entrySet()) {
-            value += Market.sellPriceOf(entry.getKey()) * entry.getValue();
+            value += valueOf(entry.getKey(), entry.getValue());
             shippedToday.add(entry.getKey(), entry.getValue());
         }
         basket.clear();
         floatAtFacing("+" + value + "G", Ui.HIGHLIGHT);
         say("Shipped! The money arrives while you sleep");
+    }
+
+    /** What `amount` of `name` sells for. Shipping and the end-of-day payout both use this one formula. */
+    private static int valueOf(String name, int amount) {
+        return Market.sellPriceOf(name) * amount;
     }
 
     private void askToSleep() {
@@ -226,7 +231,7 @@ public class FarmScreen implements Screen {
         if (passedOut) lines.add("You passed out at midnight! Half energy today.");
         int earned = 0;
         for (Map.Entry<String, Integer> entry : shippedToday.asMap().entrySet()) {
-            int value = Market.sellPriceOf(entry.getKey()) * entry.getValue();
+            int value = valueOf(entry.getKey(), entry.getValue());
             lines.add(String.format("Shipped %-10s x%-3d %6dG", entry.getKey(), entry.getValue(), value));
             earned += value;
         }
