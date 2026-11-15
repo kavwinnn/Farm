@@ -107,7 +107,7 @@ public class PetShopScreen implements Screen {
 
         g.setColor(Ui.WOOD);
         String note = isFeedRow() ? "Animal Feed: 1 feed = 1 meal for one animal."
-                : animals[row].getKind() + ": gives " + animals[row].getProductName() + " (" + animals[row].getProductPrice()
+                : animals[row].getKind() + ": gives " + animals[row].getProductName() + " (" + Market.sellPriceOf(animals[row].getProductName())
                   + "G) after " + animals[row].getDaysPerProduct() + " fed days.";
         g.drawString(note, left + 30, top + 220);
         Ui.centered(g, "Quantity  < " + quantity + " >    Total " + price() * quantity + "G", 17, top + 268, Ui.INK);
